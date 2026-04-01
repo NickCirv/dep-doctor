@@ -1,3 +1,5 @@
+![Banner](banner.svg)
+
 # dep-doctor
 
 Dependency health dashboard for Node.js projects — outdated packages, security vulnerabilities, unused deps, and duplicates in one shot.
