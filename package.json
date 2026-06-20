@@ -8,13 +8,13 @@
   },
   "scripts": {
     "start": "node bin/doctor.js",
-    "test": "node --experimental-vm-modules node_modules/.bin/jest"
+    "test": "node --test"
   },
   "keywords": ["dependencies", "npm", "audit", "outdated", "cli", "health"],
   "author": "NickCirv <nick@cirvgreen.com>",
   "license": "MIT",
   "engines": {
-    "node": ">=18.0.0",
+    "node": ">=20",
     "npm": ">=8.0.0"
   },
   "dependencies": {
