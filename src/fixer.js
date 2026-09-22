@@ -10,7 +10,7 @@ function runNpm(args, cwd) {
   })
 }
 
-export async function fixSafeUpdates(categorized, cwd = process.cwd()) {
+export async function fixSafeUpdates(categorized, cwd = process.cwd(), execute = runNpm) {
   const { patch, minor, major, unknown } = categorized
   const results = {
     updated: [],
@@ -22,7 +22,8 @@ export async function fixSafeUpdates(categorized, cwd = process.cwd()) {
   const safePackages = [...patch, ...minor]
 
   if (safePackages.length === 0 && major.length === 0) {
-    console.log(chalk.green('  All dependencies are up to date. Nothing to fix.'))
+    results.skipped.push(...unknown)
+    console.log(chalk.yellow('  No eligible patch/minor updates; unknown versions require manual review.'))
     return results
   }
 
@@ -32,19 +33,19 @@ export async function fixSafeUpdates(categorized, cwd = process.cwd()) {
     console.log()
 
     try {
-      runNpm(['update'], cwd)
+      execute(['update', '--', ...safePackages.map(pkg => pkg.name)], cwd)
 
       for (const pkg of safePackages) {
-        results.updated.push(pkg)
+        results.updated.push({ ...pkg, status: 'command-completed', installedVersion: null })
         const badge = pkg.updateType === 'patch' ? chalk.green('patch') : chalk.yellow('minor')
         console.log(
           bulletItem(
-            `${chalk.bold(pkg.name)} ${chalk.gray(pkg.current)} → ${chalk.green(pkg.latest)} (${badge})`,
+            `${chalk.bold(pkg.name)}: update command completed (${badge}); installed version not verified`,
           ),
         )
       }
       console.log()
-      console.log(chalk.green(`  Updated ${safePackages.length} packages via npm update`))
+      console.log(chalk.green(`  npm update completed for ${safePackages.length} explicitly requested packages; inspect the lockfile for resulting versions`))
     } catch (err) {
       console.log(chalk.red(`  npm update failed: ${err.message}`))
       for (const pkg of safePackages) {

@@ -1,24 +1,7 @@
-import { execFileSync } from 'child_process'
+import { readNpmJson } from './npm-json.js'
 
 export function runNpmAudit(cwd = process.cwd()) {
-  try {
-    const output = execFileSync('npm', ['audit', '--json'], {
-      cwd,
-      encoding: 'utf8',
-      stdio: ['pipe', 'pipe', 'pipe'],
-    })
-    return JSON.parse(output || '{}')
-  } catch (err) {
-    // npm audit exits with non-zero when vulnerabilities found — stdout has JSON
-    if (err.stdout) {
-      try {
-        return JSON.parse(err.stdout)
-      } catch {
-        return {}
-      }
-    }
-    return {}
-  }
+  return readNpmJson('audit', cwd)
 }
 
 export function parseAuditResults(auditData) {

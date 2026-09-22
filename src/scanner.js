@@ -1,4 +1,4 @@
-import { execFileSync } from 'child_process'
+import { readNpmJson } from './npm-json.js'
 import { readFileSync, existsSync, readdirSync, statSync } from 'fs'
 import { join, extname } from 'path'
 
@@ -23,24 +23,7 @@ export function getDeclaredDeps(pkg) {
 }
 
 export function runNpmOutdated(cwd = process.cwd()) {
-  try {
-    const output = execFileSync('npm', ['outdated', '--json'], {
-      cwd,
-      encoding: 'utf8',
-      stdio: ['pipe', 'pipe', 'pipe'],
-    })
-    return JSON.parse(output || '{}')
-  } catch (err) {
-    // npm outdated exits with code 1 when packages are outdated — stdout still has JSON
-    if (err.stdout) {
-      try {
-        return JSON.parse(err.stdout)
-      } catch {
-        return {}
-      }
-    }
-    return {}
-  }
+  return readNpmJson('outdated', cwd)
 }
 
 export function collectImports(dir, extensions = ['.js', '.ts', '.jsx', '.tsx', '.mjs', '.cjs']) {
