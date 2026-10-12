@@ -1,0 +1,11 @@
+{
+  "name": "fixture-basic-project",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "left-pad": "1.0.0"
+  },
+  "devDependencies": {
+    "never-imported-dev-dep": "1.0.0"
+  }
+}

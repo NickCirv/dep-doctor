@@ -18,6 +18,7 @@ fs.appendFileSync(${JSON.stringify(join(dir,'calls'))}, process.argv.slice(2).jo
 if (${JSON.stringify(mode)} === 'broken') { console.log('network failure'); process.exit(2) }
 if (${JSON.stringify(mode)} === 'invalid-json') { console.log('not JSON'); process.exit(1) }
 if (${JSON.stringify(mode)} === 'error-report') { console.log(JSON.stringify({error:{code:'EAI_AGAIN'}})); process.exit(1) }
+if (${JSON.stringify(mode)} === 'no-lockfile' && process.argv[2] === 'audit') { console.log(JSON.stringify({error:{code:'ENOLOCK',summary:'This command requires an existing lockfile.',detail:'Try creating one first with: npm i --package-lock-only'}})); process.exit(1) }
 if (process.argv[2] === 'outdated') console.log(JSON.stringify({used:{current:'1.0.0',wanted:'1.1.0',latest:'1.1.0'}}));
 else if(process.argv[2] === 'audit') console.log(JSON.stringify({vulnerabilities:{used:{severity:'high',via:[]}}}));
 else { console.error('Mutation not expected'); process.exit(9) }
@@ -44,6 +45,10 @@ test('missing manifest and unknown command fail clearly',t=>{
  const f=fixture(t);rmSync(join(f.dir,'package.json'));let r=f.call('scan');assert.equal(r.status,1);assert.match(r.stderr,/No package.json/)
  r=f.call('surprise');assert.equal(r.status,1);assert.match(r.stderr,/too many arguments|unknown command/)
 })
+test('scan handles the committed fixture project offline',t=>{
+ const f=fixture(t);const r=f.call('scan','--cwd',resolve('test/fixtures/basic-project'))
+ assert.equal(r.status,0,r.stderr);assert.match(r.stdout,/fixture-basic-project/);assert.match(r.stdout,/Scan Complete/)
+})
 test('fix requires explicit authorization before scanning',async()=>{
  let calls=0;const status=await run(['node','dep-doctor','fix'],{scanProject:()=>{calls++;throw Error('must not scan')}})
  assert.equal(status,1);assert.equal(calls,0)
@@ -60,6 +65,14 @@ test('fix failure returns nonzero',async()=>{
 
 test('invalid JSON and npm error objects fail closed',t=>{
  for(const mode of ['invalid-json','error-report']) {
-  const f=fixture(t,mode);const r=f.call('report');assert.equal(r.status,1);assert.match(r.stderr,/invalid JSON|usable report/);assert.doesNotMatch(r.stdout,/excellent health|No vulnerabilities/)
+  const f=fixture(t,mode);const r=f.call('report');assert.equal(r.status,1);assert.match(r.stderr,/invalid JSON|reported an error/);assert.doesNotMatch(r.stdout,/excellent health|No vulnerabilities/)
  }
+})
+
+// Regression: default/report on a lockfile-less project (fresh clone, yarn/pnpm) used to die with
+// the dead-end "npm audit did not return a usable report", discarding npm's ENOLOCK remediation.
+test('report without a lockfile surfaces npm audit ENOLOCK guidance',t=>{
+ const f=fixture(t,'no-lockfile');const r=f.call('report');assert.equal(r.status,1)
+ assert.match(r.stderr,/npm audit reported an error \(ENOLOCK: This command requires an existing lockfile\.\)/)
+ assert.doesNotMatch(r.stdout,/excellent health|No vulnerabilities/)
 })
