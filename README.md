@@ -4,11 +4,9 @@
 
 Inspect an npm project's dependency versions, audit findings, likely unused imports and duplicate installations from one CLI.
 
-> **Local repair candidate.** This copy restores the missing command dispatcher. It has not been published or applied to the upstream repository.
-
 ## Start locally
 
-Requires Node.js 20 or newer and npm 8 or newer. In this candidate directory:
+Requires Node.js 20 or newer and npm 8 or newer. From a clone of this repository:
 
 ```sh
 npm ci --ignore-scripts --no-audit --no-fund
@@ -43,9 +41,11 @@ The score combines version age, audit severity, unused-import candidates and dup
 
 ## Validation
 
-`npm test` passed **13 tests** on Node.js 26.7.0 for this candidate. Tests launch the real CLI against temporary project fixtures with a fake npm adapter; they cover default/report/scan dispatch, error handling and explicit mutation authorization. Update/removal helpers are mocked in authorization tests, so no real dependency update, uninstall or audit request was performed by the suite. Node.js 20 compatibility and live registry behavior remain unverified.
+`npm test` passed **15 tests** on Node.js 26.7.0. Tests launch the real CLI against temporary project fixtures and the committed sample project in `test/fixtures/basic-project`, using a fake npm adapter; they cover default/report/scan dispatch, error handling, the lockfile-less audit failure and explicit mutation authorization. Update/removal helpers are mocked in authorization tests, so the suite performs no real dependency update, uninstall or audit request. GitHub Actions CI runs the same suite on Node.js 20 and 22.
 
-See [repair evidence](REPAIR-REPORT.md) for the exact scope. This result supports the local startup repair, not a claim that every dependency-management edge case is resolved.
+A separate manual run on Node.js 26.7.0 against the live npm registry verified `scan`, `report` and `fix --yes` end to end on a scratch project; `fix --yes` updated left-pad 1.0.0 to 1.3.0 in that project's lockfile and `node_modules`. Reports on projects without a `package-lock.json` (for example yarn or pnpm projects) exit nonzero and relay npm's `ENOLOCK` guidance.
+
+See [repair evidence](REPAIR-REPORT.md) for the history of the May 2026 startup repair. These results support the commands above, not a claim that every dependency-management edge case is resolved.
 
 ## License and contact
 
