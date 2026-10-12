@@ -1,6 +1,6 @@
 # dep-doctor — repair evidence
 
-Status: historical record of the May 2026 startup repair. The repair now lives in this repository's main branch (merged via PR #1 and PR #2); the "local candidate" framing below describes the state at the time of the repair. Not published to any package registry.
+Status: historical record of the May 2026 startup repair. The repair now lives in this repository's main branch (landed as direct commit `08b4ef8` on 2026-09-22); the "local candidate" framing below describes the state at the time of the repair. Not published to any package registry.
 
 Source commit: `201f565c466217288310b003b2d5ee24c15182b8` from the public captured source. Original capture and other worktrees are unchanged.
 
